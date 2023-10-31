@@ -1272,6 +1272,35 @@
                   </property>
                  </widget>
                 </item>
+
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_8">
+                  <property name="text">
+                   <string>Mental Strategies file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="2">
+                 <widget class="QLineEdit" name="leMentalStragFile">
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="3">
+                 <widget class="QPushButton" name="btnChooseMentalStragFile">
+                  <property name="maximumSize">
+                   <size>
+                    <width>32</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+
                 <item row="6" column="0">
                  <widget class="QLabel" name="label_4">
                   <property name="text">
@@ -1493,6 +1522,7 @@
                   </property>
                  </widget>
                 </item>
+                
                </layout>
               </item>
               <item>

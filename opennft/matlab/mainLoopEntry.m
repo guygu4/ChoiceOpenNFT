@@ -76,6 +76,7 @@ if (strcmp(P.Prot, 'Inter') ||  strcmp(P.Prot, 'Cont') || strcmp(P.Prot, 'ContTa
             mainLoopData.Reward = '';
         end
         displayData.displayStage = 'instruction';
+        
     end
 
     if strcmp(P.Prot, 'Inter')

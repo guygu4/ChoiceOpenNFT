@@ -16,10 +16,10 @@ tDispl = tic;
 
 P = evalin('base', 'P');
 Tex = evalin('base', 'Tex');
-
+KbName('UnifyKeyNames');
 % Note, don't split cell structure in 2 lines with '...'.
-fieldNames = {'feedbackType', 'condition', 'dispValue', 'Reward', 'displayStage','displayBlankScreen', 'iteration'};
-defaultFields = {'', 0, 0, '', '', '', 0};
+fieldNames = {'feedbackType', 'condition', 'dispValue', 'Reward', 'displayStage','displayBlankScreen', 'iteration', 'run'};
+defaultFields = {'', 0, 0, '', '', '', 0, 0};
 % disp(displayData)
 eval(varsFromStruct(displayData, fieldNames, defaultFields))
 
@@ -27,6 +27,16 @@ if ~strcmp(feedbackType, 'DCM')
     dispColor = [255, 255, 255];
     instrColor = [155, 150, 150];
 end
+filename = P.MentalStragFile;
+fid = fopen(filename);
+line = fgetl(fid);
+strategies = {};
+while ischar(line)
+    strategies{end + 1} = line;
+    line = fgetl(fid);
+end
+fclose(fid);
+buttons_pressed_file = strcat(P.WorkFolder,['/NF_Data_',num2str(P.NFRunNr),'/buttons_pressed_file_', num2str(P.NFRunNr), '.txt']);
 
 switch feedbackType
     %% Continuous PSC
@@ -58,10 +68,59 @@ switch feedbackType
                     floor(P.Screen.w/2+P.Screen.w/20); ...
                     floor(P.Screen.h/2-dispValue), ...
                     floor(P.Screen.h/2-dispValue)], P.Screen.lw, [0 255 0]);
+            case 3 % mental strategies chooser
+                run = run + 1;
+                option_1 = strcat('option 1: ', strategies{1});
+                option_2 = strcat('option 2: ', strategies{2});
+                option_3 = strcat('option 3: ', strategies{3});
+                option_4 = strcat('option 4: ', strategies{4});
+                Screen('TextSize', P.Screen.wPtr , P.Screen.h/20);
+                Screen('DrawText', P.Screen.wPtr, 'Choose your mental strategy', ...
+                    floor(P.Screen.w/1-P.Screen.h/1), ...
+                    floor(P.Screen.h/5-P.Screen.h/10), [200 200 200]);
+                    Screen('DrawText', P.Screen.wPtr, option_1, ...
+                    floor(P.Screen.w/3-P.Screen.h/3), ...
+                    floor(P.Screen.h/3-P.Screen.h/10), [200 200 200]);
+                Screen('DrawText', P.Screen.wPtr, option_2, ...
+                    floor(P.Screen.w/3-P.Screen.h/3), ...
+                    floor(P.Screen.h/2.4-P.Screen.h/10), [200 200 200]);
+                Screen('DrawText', P.Screen.wPtr, option_3, ...
+                    floor(P.Screen.w/3-P.Screen.h/3), ...
+                    floor(P.Screen.h/2-P.Screen.h/10), [200 200 200]);
+                Screen('DrawText', P.Screen.wPtr, option_4, ...
+                    floor(P.Screen.w/3-P.Screen.h/3), ...
+                    floor(P.Screen.h/1.7-P.Screen.h/10), [200 200 200]);
+                    % Check the state of the keyboard.
+                    [ keyIsDown, seconds, keyCode ] = KbCheck;
+                    keyCode = find(keyCode, 1);
+                    key_pressed = '';
+                    
+                    % If the user is pressing a key, then display its code number and name.
+                    if keyIsDown
+                        % Note that we use find(keyCode) because keyCode is an array.
+                        % See 'help KbCheck'
+                        keyPressed = KbName(keyCode);
+                        keyPressed = keyPressed(1);
+                        key_pressed = strcat(' ', keyPressed);
+                        fwid = fopen(buttons_pressed_file, 'a+');
+                        fprintf(fwid, 'Pressed: Button %s at %d seconds\n',keyPressed, iteration);
+                        fclose(fwid);
+                        fprintf('You pressed key %i which is %s\n', keyCode, keyPressed);
+                        Screen('DrawText', P.Screen.wPtr, strcat('you picked: ',keyPressed), ...
+                            floor(P.Screen.w/3-P.Screen.h/3), ...
+                            floor(P.Screen.h/1.3-P.Screen.h/10), [200 200 200]);
+                        % If the user holds down a key, KbCheck will report multiple events.
+                        % To condense multiple 'keyDown'     events into a single event, we wait until all
+                        % keys have been released.
+                    end    
         end
+
+        
+
+
         P.Screen.vbl = Screen('Flip', P.Screen.wPtr, ...
             P.Screen.vbl + P.Screen.ifi/2);
-    
+
     %% Continuous PSC with task block
     case 'bar_count_task'
         dispValue  = dispValue*(floor(P.Screen.h/2) - floor(P.Screen.h/10))/100;
@@ -104,6 +163,7 @@ switch feedbackType
         end
         
     %% Intermittent PSC
+
 case 'value_fixation'
         indexSmiley = round(dispValue);
         if indexSmiley == 0
